@@ -35,19 +35,27 @@ class MainGameplayFragment : Fragment() {
 
     private fun initializeGrid(view: View) {
         lettersGrid.removeAllViews()
-        val letters = ('A'..'Z').toList()
+        val vowels = listOf('A', 'E', 'I', 'O', 'U')
+        val consonants = ('A'..'Z').toList() - vowels
         val context = view.context
         val total = 16
         val columnCount = 4
         lettersGrid.columnCount = columnCount
         lettersGrid.rowCount = 4
 
-        for (i in 0 until total) {
+        val gridLetters = mutableListOf<Char>().apply {
+            addAll(List(2) { vowels.random() })
+            addAll(List(total - 2) { (vowels + consonants).random() })
+            shuffle()
+        }
+
+        gridLetters.forEach { letter ->
             val button = Button(context).apply {
-                text = letters[Random.nextInt(letters.size)].toString()
-                layoutParams = GridLayout.LayoutParams(GridLayout.spec(
-                    GridLayout.UNDEFINED, GridLayout.FILL, 1f),
-                    GridLayout.spec(GridLayout.UNDEFINED, GridLayout.FILL, 1f)).apply {
+                text = letter.toString()
+                layoutParams = GridLayout.LayoutParams(
+                    GridLayout.spec(GridLayout.UNDEFINED, GridLayout.FILL, 1f),
+                    GridLayout.spec(GridLayout.UNDEFINED, GridLayout.FILL, 1f)
+                ).apply {
                     width = 0
                     height = 0
                     setMargins(5, 5, 5, 5)
@@ -56,5 +64,6 @@ class MainGameplayFragment : Fragment() {
             lettersGrid.addView(button)
         }
     }
+
 
 }
