@@ -46,9 +46,20 @@ class MainGameplayFragment : Fragment() {
         lettersGrid.removeAllViews()
         val context = view.context
 
+        val vowels = listOf('A', 'E', 'I', 'O', 'U')
+        val totalCells = 16
+        val vowelPositions = listOf((0 until totalCells).random(), (0 until totalCells).random())
+
         gridLetters = List(4) { row ->
             List(4) { col ->
-                val letter = ('A'..'Z').random()
+                val position = row * 4 + col
+
+                val letter = if (position in vowelPositions) {
+                    vowels.random()
+                } else {
+                    (('A'..'Z') - vowels).random()
+                }
+
                 val button = Button(context).apply {
                     text = letter.toString()
                 }
