@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import java.io.BufferedReader
 import java.util.Locale
+import kotlin.math.max
 import kotlin.random.Random
 
 class MainGameplayFragment : Fragment() {
@@ -40,15 +41,10 @@ class MainGameplayFragment : Fragment() {
         }
         view.findViewById<Button>(R.id.submitButton).setOnClickListener {
             val currentWord = selectedLetters.toString().lowercase(Locale.getDefault())
-
-            if (isWordValid(currentWord)) {
-                val scoreForCurrentWord = calculateScore(currentWord, true)
-                Toast.makeText(context, "Correct word! +$scoreForCurrentWord", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "Word not found in dictionary. -10", Toast.LENGTH_SHORT).show()
-            }
+            calculateScore(currentWord)
             clearSelection()
         }
+
 
 
         return view
@@ -59,72 +55,89 @@ class MainGameplayFragment : Fragment() {
 
     private fun loadDictionary(context: Context) {
         val inputStream = context.assets.open("words.txt")
-        dictionaryWords = inputStream.bufferedReader().use(BufferedReader::readLines).toSet()
+        dictionaryWords = inputStream.bufferedReader().useLines { lines ->
+            lines.map { it.lowercase() }.toSet()
+        }
     }
 
-    private fun calculateScore(word: String, isValidWord: Boolean) {
+
+    private val scoredWords = mutableSetOf<String>()
+
+    private fun calculateScore(word: String) {
         val vowels = setOf('A', 'E', 'I', 'O', 'U')
         val specialConsonants = setOf('S', 'Z', 'P', 'X', 'Q')
-        var score = 0
-
-        if (isValidWord) {
-            word.uppercase(Locale.ROOT).forEach { char ->
-                score += when (char) {
+        var score = if (word.length < 4 || word.count { it.uppercaseChar() in vowels } < 2) {
+            Toast.makeText(context, "Invalid: Less than 4 characters or less than 2 vowels", Toast.LENGTH_SHORT).show()
+            -10
+        } else if (!isWordValid(word) || word in scoredWords) {
+            Toast.makeText(context, "Invalid: Word not found or already used", Toast.LENGTH_SHORT).show()
+            -10
+        } else {
+            var wordScore = word.uppercase(Locale.ROOT).sumOf { char ->
+                when (char) {
                     in vowels -> 5
                     else -> 1
-                }
+                } as Int
             }
-
-            if (word.any { it.uppercaseChar() in specialConsonants }) score *= 2
-        } else {
-            score = -10
+            if (word.any { it.uppercaseChar() in specialConsonants }) wordScore *= 2
+            scoredWords.add(word)
+            Toast.makeText(context, "Correct: +$wordScore", Toast.LENGTH_SHORT).show()
+            wordScore
         }
 
-        currentScore += score
-
-        gameplayActionsListener?.onScoreUpdated(currentScore)    }
-
+        currentScore = max(currentScore + score, 0)
+        gameplayActionsListener?.onScoreUpdated(currentScore)
+    }
 
     private fun initializeGrid(view: View) {
         lettersGrid.removeAllViews()
         val context = view.context
 
         val vowels = listOf('A', 'E', 'I', 'O', 'U')
-        val totalCells = 16
-        val vowelPositions = listOf((0 until totalCells).random(), (0 until totalCells).random())
+        val consonants = ('A'..'Z').toList() - vowels
 
-        gridLetters = List(4) { row ->
-            List(4) { col ->
+        val totalCells = 16
+        val vowelPositions = mutableSetOf<Int>()
+        while (vowelPositions.size < 2) {
+            vowelPositions.add((0 until totalCells).random())
+        }
+
+        gridLetters = mutableListOf()
+
+        for (row in 0 until 4) {
+            for (col in 0 until 4) {
                 val position = row * 4 + col
 
-                val letter = if (position in vowelPositions) {
-                    vowels.random()
-                } else {
-                    (('A'..'Z') - vowels).random()
+                val letter = when {
+                    position in vowelPositions -> vowels.random()
+                    (0..3).random() > 2 -> vowels.random()
+                    else -> consonants.random()
                 }
 
                 val button = Button(context).apply {
                     text = letter.toString()
+                    layoutParams = GridLayout.LayoutParams().apply {
+                        width = 0
+                        height = 0
+                        setGravity(Gravity.FILL)
+                        setMargins(5, 5, 5, 5)
+                        columnSpec = GridLayout.spec(col, 1f)
+                        rowSpec = GridLayout.spec(row, 1f)
+                    }
                 }
 
                 val letterButton = Letter(button, row, col)
-                lettersGrid.addView(button, GridLayout.LayoutParams().apply {
-                    width = 0
-                    height = 0
-                    setGravity(Gravity.FILL)
-                    setMargins(5, 5, 5, 5)
-                    columnSpec = GridLayout.spec(col, 1f)
-                    rowSpec = GridLayout.spec(row, 1f)
-                })
-
                 button.setOnClickListener {
                     onLetterButtonClick(letterButton)
                 }
 
-                letterButton
+              (gridLetters as MutableList<Letter>).add(letterButton)
+
+                lettersGrid.addView(button)
             }
-        }.flatten()
+        }
     }
+
 
     private var lastSelectedLetter: Letter? = null
 
