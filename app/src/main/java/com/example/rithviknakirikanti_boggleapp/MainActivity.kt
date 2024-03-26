@@ -3,7 +3,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 
-class MainActivity : AppCompatActivity(), ScoreResetFragment.OnNewGameRequestedListener {
+class MainActivity : AppCompatActivity(), ScoreResetFragment.OnNewGameRequestedListener, MainGameplayFragment.GameplayActionsListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,4 +28,9 @@ class MainActivity : AppCompatActivity(), ScoreResetFragment.OnNewGameRequestedL
         val scoreFragment = supportFragmentManager.findFragmentById(R.id.scoreResetFragmentContainer) as? ScoreResetFragment
         scoreFragment?.updateScore(0)
     }
+    override fun onScoreUpdated(score: Int) {
+        val scoreFragment = supportFragmentManager.findFragmentById(R.id.scoreResetFragmentContainer) as? ScoreResetFragment
+        scoreFragment?.updateScore(score)
+    }
+
 }
