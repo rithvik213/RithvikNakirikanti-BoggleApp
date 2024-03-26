@@ -16,8 +16,16 @@
         android:alignmentMode="alignMargins"
         android:columnOrderPreserved="false"
         android:stretchMode="columnWidth">
-        <!-- Buttons will be added dynamically in code -->
     </GridLayout>
+
+    <TextView
+        android:id="@+id/selectedLettersTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
