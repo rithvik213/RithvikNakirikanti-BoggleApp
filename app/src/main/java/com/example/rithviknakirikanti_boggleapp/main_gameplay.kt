@@ -67,7 +67,7 @@ class MainGameplayFragment : Fragment() {
             Toast.makeText(context, "Invalid: Less than 4 characters or less than 2 vowels, -10", Toast.LENGTH_SHORT).show()
             -10
         } else if (!isWordValid(word) || word in scoredWords) {
-            Toast.makeText(context, "Invalid: Word not found or already used", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Invalid: Word not found or already used, -10", Toast.LENGTH_SHORT).show()
             -10
         } else {
             var wordScore = word.uppercase(Locale.ROOT).sumOf { char ->
