@@ -44,9 +44,6 @@ class MainGameplayFragment : Fragment() {
             calculateScore(currentWord)
             clearSelection()
         }
-
-
-
         return view
     }
 
@@ -66,8 +63,8 @@ class MainGameplayFragment : Fragment() {
     private fun calculateScore(word: String) {
         val vowels = setOf('A', 'E', 'I', 'O', 'U')
         val specialConsonants = setOf('S', 'Z', 'P', 'X', 'Q')
-        var score = if (word.length < 4 || word.count { it.uppercaseChar() in vowels } < 2) {
-            Toast.makeText(context, "Invalid: Less than 4 characters or less than 2 vowels", Toast.LENGTH_SHORT).show()
+        val score = if (word.length < 4 || word.count { it.uppercaseChar() in vowels } < 2) {
+            Toast.makeText(context, "Invalid: Less than 4 characters or less than 2 vowels, -10", Toast.LENGTH_SHORT).show()
             -10
         } else if (!isWordValid(word) || word in scoredWords) {
             Toast.makeText(context, "Invalid: Word not found or already used", Toast.LENGTH_SHORT).show()
